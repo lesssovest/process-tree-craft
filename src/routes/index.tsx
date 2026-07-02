@@ -1,24 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
+import { Toaster } from "@/components/ui/sonner";
+import { AppSidebar } from "@/components/process/AppSidebar";
+import { ProcessTree } from "@/components/process/ProcessTree";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="flex min-h-screen bg-background text-foreground">
+      <AppSidebar />
+      <main className="flex-1 overflow-x-hidden">
+        <div className="mx-auto max-w-4xl px-5 py-8 sm:px-8">
+          <button
+            type="button"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" /> Назад
+          </button>
+
+          <header className="mb-7">
+            <h1 className="text-2xl font-bold tracking-tight">Структура процессов</h1>
+            <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">
+              Управляйте иерархией процессов вашей организации. Эти процессы доступны для выбора при
+              регистрации инцидентов. Добавляйте, перемещайте и деактивируйте элементы — структура
+              может содержать несколько уровней вложенности.
+            </p>
+          </header>
+
+          <ProcessTree />
+        </div>
+      </main>
+      <Toaster richColors position="top-right" />
     </div>
   );
 }
