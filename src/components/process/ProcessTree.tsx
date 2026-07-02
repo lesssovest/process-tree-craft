@@ -61,10 +61,12 @@ interface DragState {
 interface RowHandlers {
   expanded: Set<string>;
   editingId: string | null;
+  selectedId: string | null;
   matched: Set<string>;
   searching: boolean;
   drag: DragState | null;
   toggleExpand: (id: string) => void;
+  select: (id: string) => void;
   startEdit: (id: string) => void;
   commitEdit: (id: string, name: string) => void;
   cancelEdit: () => void;
@@ -86,6 +88,7 @@ export function ProcessTree() {
   const [savedSnapshot, setSavedSnapshot] = useState<string>(() => JSON.stringify(seedProcesses));
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(collectAllIds(seedProcesses)));
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [drag, setDrag] = useState<DragState | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -113,6 +116,8 @@ export function ProcessTree() {
 
   const expandAll = () => setExpanded(new Set(collectAllIds(nodes)));
   const collapseAll = () => setExpanded(new Set());
+
+  const select = (id: string) => setSelectedId((prev) => (prev === id ? null : id));
 
   const startEdit = (id: string) => setEditingId(id);
   const cancelEdit = () => {
@@ -282,10 +287,12 @@ export function ProcessTree() {
   const handlers: RowHandlers = {
     expanded: effectiveExpanded,
     editingId,
+    selectedId,
     matched,
     searching,
     drag,
     toggleExpand,
+    select,
     startEdit,
     commitEdit,
     cancelEdit,
@@ -396,11 +403,13 @@ function TreeRow({ node, depth, h }: { node: ProcessNode; depth: number; h: RowH
   const isDragging = h.drag?.dragId === node.id;
   const isOver = h.drag?.overId === node.id;
   const dropPos = isOver ? h.drag?.position : null;
+  const isSelected = h.selectedId === node.id;
 
   return (
     <li>
       <div
         draggable={!isEditing}
+        onClick={() => !isEditing && h.select(node.id)}
         onDragStart={(e) => {
           e.stopPropagation();
           h.onDragStart(node.id);
@@ -413,8 +422,9 @@ function TreeRow({ node, depth, h }: { node: ProcessNode; depth: number; h: RowH
         }}
         onDragEnd={h.onDragEnd}
         className={cn(
-          "group relative flex items-center gap-1 rounded-lg py-1.5 pr-2 transition-colors",
+          "group relative flex cursor-pointer items-center gap-1 rounded-lg py-1.5 pr-2 transition-colors",
           "hover:bg-accent/50",
+          isSelected && "bg-accent ring-1 ring-primary/40",
           isDragging && "opacity-40",
           dropPos === "inside" && "bg-accent ring-1 ring-primary/40",
         )}
@@ -441,7 +451,10 @@ function TreeRow({ node, depth, h }: { node: ProcessNode; depth: number; h: RowH
         {/* expander */}
         <button
           type="button"
-          onClick={() => hasChildren && h.toggleExpand(node.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (hasChildren) h.toggleExpand(node.id);
+          }}
           className={cn(
             "flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground",
             hasChildren ? "hover:bg-accent hover:text-foreground" : "invisible",
@@ -480,7 +493,12 @@ function TreeRow({ node, depth, h }: { node: ProcessNode; depth: number; h: RowH
 
         {/* actions */}
         {!isEditing && (
-          <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+          <div
+            className={cn(
+              "flex shrink-0 items-center gap-0.5 transition-opacity group-hover:opacity-100 focus-within:opacity-100",
+              isSelected ? "opacity-100" : "opacity-0",
+            )}
+          >
             <IconBtn title="Редактировать название" onClick={() => h.startEdit(node.id)}>
               <Pencil className="size-3.5" />
             </IconBtn>
@@ -539,7 +557,10 @@ function IconBtn({
       type="button"
       title={title}
       aria-label={title}
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
       className={cn(
         "flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors",
         danger ? "hover:bg-destructive/10 hover:text-destructive" : "hover:bg-accent hover:text-foreground",
