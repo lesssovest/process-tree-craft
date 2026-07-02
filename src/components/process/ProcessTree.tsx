@@ -403,11 +403,13 @@ function TreeRow({ node, depth, h }: { node: ProcessNode; depth: number; h: RowH
   const isDragging = h.drag?.dragId === node.id;
   const isOver = h.drag?.overId === node.id;
   const dropPos = isOver ? h.drag?.position : null;
+  const isSelected = h.selectedId === node.id;
 
   return (
     <li>
       <div
         draggable={!isEditing}
+        onClick={() => !isEditing && h.select(node.id)}
         onDragStart={(e) => {
           e.stopPropagation();
           h.onDragStart(node.id);
@@ -420,8 +422,9 @@ function TreeRow({ node, depth, h }: { node: ProcessNode; depth: number; h: RowH
         }}
         onDragEnd={h.onDragEnd}
         className={cn(
-          "group relative flex items-center gap-1 rounded-lg py-1.5 pr-2 transition-colors",
+          "group relative flex cursor-pointer items-center gap-1 rounded-lg py-1.5 pr-2 transition-colors",
           "hover:bg-accent/50",
+          isSelected && "bg-accent ring-1 ring-primary/40",
           isDragging && "opacity-40",
           dropPos === "inside" && "bg-accent ring-1 ring-primary/40",
         )}
