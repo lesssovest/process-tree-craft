@@ -287,10 +287,12 @@ export function ProcessTree() {
   const handlers: RowHandlers = {
     expanded: effectiveExpanded,
     editingId,
+    selectedId,
     matched,
     searching,
     drag,
     toggleExpand,
+    select,
     startEdit,
     commitEdit,
     cancelEdit,
