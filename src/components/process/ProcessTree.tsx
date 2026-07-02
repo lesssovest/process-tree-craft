@@ -61,10 +61,12 @@ interface DragState {
 interface RowHandlers {
   expanded: Set<string>;
   editingId: string | null;
+  selectedId: string | null;
   matched: Set<string>;
   searching: boolean;
   drag: DragState | null;
   toggleExpand: (id: string) => void;
+  select: (id: string) => void;
   startEdit: (id: string) => void;
   commitEdit: (id: string, name: string) => void;
   cancelEdit: () => void;
